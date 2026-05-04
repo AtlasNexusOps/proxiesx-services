@@ -15,6 +15,9 @@ from pathlib import Path
 
 from amazon_tracker.tracker import AmazonTracker
 from food_delivery.tracker import FoodDeliveryTracker
+from facebook_marketplace.tracker import FacebookMarketplaceTracker
+from tiktok_trend.tracker import TikTokTrendTracker
+from trend_intelligence.tracker import TrendIntelligenceTracker
 
 
 class X402Gateway:
@@ -27,6 +30,9 @@ class X402Gateway:
         self.services = {
             "amazon": AmazonTracker(country="US"),
             "food-delivery": FoodDeliveryTracker(country="US"),
+            "facebook": FacebookMarketplaceTracker(country="US"),
+            "tiktok": TikTokTrendTracker(country="US"),
+            "trends": TrendIntelligenceTracker(country="US"),
         }
         self._request_count = 0
         self._start_time = time.time()
@@ -106,11 +112,22 @@ class X402Gateway:
             ],
         }
 
+    async def _handle_simple(self, service: str, **kwargs) -> dict:
+        """Generic handler for simple scrape operations."""
+        tracker = self.services.get(service)
+        if not tracker:
+            return {"error": f"Unknown service: {service}"}
+        result = await tracker.run(**kwargs)
+        return self._format_response(result, service)
+
     def _get_price(self, service: str) -> float:
         """Per-request pricing in USDC."""
         prices = {
             "amazon": 0.003,
             "food-delivery": 0.002,
+            "facebook": 0.002,
+            "tiktok": 0.005,
+            "trends": 0.01,
         }
         return prices.get(service, 0.005)
 
@@ -181,6 +198,35 @@ async def main():
                 qs = path.split("?", 1)[1] if "?" in path else ""
                 params = dict(urllib.parse.parse_qsl(qs))
                 resp = await gateway.handle_compare("food-delivery", params)
+                body = json.dumps(resp).encode()
+                status = "200 OK"
+            elif path.startswith("/api/v1/marketplace/search"):
+                import urllib.parse
+                qs = path.split("?", 1)[1] if "?" in path else ""
+                params = dict(urllib.parse.parse_qsl(qs))
+                resp = await gateway.handle_search("facebook", params)
+                body = json.dumps(resp).encode()
+                status = "200 OK"
+            elif path.startswith("/api/v1/tiktok/hashtag/"):
+                tag = path.split("/")[-1]
+                resp = await gateway._handle_simple("tiktok", hashtag=tag)
+                body = json.dumps(resp).encode()
+                status = "200 OK"
+            elif path.startswith("/api/v1/tiktok/creator/"):
+                creator = path.split("/")[-1]
+                resp = await gateway._handle_simple("tiktok", creator=creator)
+                body = json.dumps(resp).encode()
+                status = "200 OK"
+            elif path.startswith("/api/v1/tiktok/trending"):
+                resp = await gateway._handle_simple("tiktok", trending=True)
+                body = json.dumps(resp).encode()
+                status = "200 OK"
+            elif path.startswith("/api/v1/trends/"):
+                import urllib.parse
+                keyword = path.split("/")[-1]
+                qs = path.split("?", 1)[1] if "?" in path else ""
+                params = dict(urllib.parse.parse_qsl(qs))
+                resp = await gateway._handle_simple("trends", keyword=keyword)
                 body = json.dumps(resp).encode()
                 status = "200 OK"
             else:

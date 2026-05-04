@@ -49,17 +49,26 @@ app.get("/health", (c) => c.json({
   gateway: "x402-hono",
   version: "1.0.0",
   backend: PYTHON_BACKEND,
-  services: ["amazon", "food-delivery"],
+  services: ["amazon", "food-delivery", "facebook", "tiktok", "trends"],
   pricing: {
     "amazon/track": "0.003 USDC",
     "amazon/category": "0.003 USDC",
     "food-delivery/compare": "0.002 USDC",
+    "facebook/search": "0.002 USDC",
+    "tiktok/hashtag": "0.005 USDC",
+    "tiktok/creator": "0.005 USDC",
+    "trends/keyword": "0.01 USDC",
   },
 }));
 
 app.get("/api/v1/track/:asin", (c) => proxyToPython(`/api/v1/track/${c.req.param("asin")}`, c));
 app.get("/api/v1/category/:id", (c) => proxyToPython(`/api/v1/category/${c.req.param("id")}`, c));
 app.get("/api/v1/compare", (c) => proxyToPython("/api/v1/compare", c));
+app.get("/api/v1/marketplace/search", (c) => proxyToPython("/api/v1/marketplace/search", c));
+app.get("/api/v1/tiktok/hashtag/:tag", (c) => proxyToPython(`/api/v1/tiktok/hashtag/${c.req.param("tag")}`, c));
+app.get("/api/v1/tiktok/creator/:user", (c) => proxyToPython(`/api/v1/tiktok/creator/${c.req.param("user")}`, c));
+app.get("/api/v1/tiktok/trending", (c) => proxyToPython("/api/v1/tiktok/trending", c));
+app.get("/api/v1/trends/:keyword", (c) => proxyToPython(`/api/v1/trends/${c.req.param("keyword")}`, c));
 app.get("/api/v1/search", (c) => proxyToPython("/api/v1/search", c));
 
 // 402 handler
