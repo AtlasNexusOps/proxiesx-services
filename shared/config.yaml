@@ -1,0 +1,25 @@
+# Shared configuration for all Proxies.sx services
+proxy:
+  base_url: "https://api.proxies.sx/v1/x402"
+  country: "US"
+  default_traffic_gb: 0.1
+  timeout_seconds: 30
+  retry_attempts: 3
+
+x402:
+  # Payment gateway — USDC per API call
+  currency: "USDC"
+  network: "solana"
+  # x402-hono compatible endpoint
+  endpoint_prefix: "/api/v1"
+
+deployment:
+  port: 8080
+  healthcheck_path: "/health"
+  rate_limit_per_minute: 60
+
+data_toolkit:
+  output_formats: ["json", "csv"]
+  dedup: true
+  null_handling: "drop_empty"
+  schema_validation: true

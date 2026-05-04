@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  # Python scraper backend (internal, no direct internet exposure)
+  scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: proxiesx-scraper
+    restart: unless-stopped
+    environment:
+      - PROXIES_COUNTRY=${PROXIES_COUNTRY:-US}
+      - PYTHONUNBUFFERED=1
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    # No ports exposed — only accessible via gateway
+
+  # Node.js x402 payment gateway (public-facing)
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    container_name: proxiesx-gateway
+    restart: unless-stopped
+    ports:
+      - "${GATEWAY_PORT:-3000}:3000"
+    environment:
+      - PYTHON_BACKEND=http://scraper:8080
+      - PORT=3000
+    networks:
+      - internal
+    depends_on:
+      scraper:
+        condition: service_healthy
+
+networks:
+  internal:
+    driver: bridge

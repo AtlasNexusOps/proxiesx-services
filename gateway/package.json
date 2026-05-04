@@ -1,0 +1,14 @@
+{
+  "name": "proxiesx-x402-gateway",
+  "version": "1.0.0",
+  "description": "x402 USDC payment gateway for Proxies.sx Python scraping services",
+  "type": "module",
+  "scripts": {
+    "start": "node index.mjs",
+    "dev": "node --watch index.mjs"
+  },
+  "dependencies": {
+    "@proxies-sx/x402-hono": "^1.0.0",
+    "hono": "^4.0.0"
+  }
+}
