@@ -1,4 +1,5 @@
 Proxies.sx Service Suite
+
 5-service Python scraping suite for the Proxies.sx marketplace — Amazon, Food Delivery, Trends, TikTok, Facebook Marketplace.
 Built as a multi-bounty submission (Claim #421) with shared infrastructure across all services.
 
