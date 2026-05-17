@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proxies.sx — USDC Payment-Gated API Services</title>
+<style>
+  :root {
+    --violet: #7C3AED;
+    --violet-light: #A855F7;
+    --indigo: #6366F1;
+    --dark: #0F172A;
+    --slate: #64748B;
+    --green: #10B981;
+    --amber: #F59E0B;
+    --bg: #0a0a0f;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: #e2e8f0;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  /* Animated BG */
+  .bg-grid {
+    position: fixed; inset:0; z-index:0; pointer-events:none;
+    background-image: radial-gradient(circle at 1px 1px, rgba(124,58,237,0.08) 1px, transparent 0);
+    background-size: 40px 40px;
+  }
+  .bg-glow {
+    position: fixed; z-index:0; pointer-events:none;
+    width: 600px; height: 600px; border-radius: 50%;
+    filter: blur(120px); opacity: 0.15;
+  }
+  .bg-glow-1 { top: -200px; left: -200px; background: var(--violet); }
+  .bg-glow-2 { bottom: -200px; right: -200px; background: var(--indigo); }
+
+  .container { max-width: 1100px; margin:0 auto; padding:0 1.5rem; position:relative; z-index:1; }
+
+  /* Hero */
+  .hero { padding: 5rem 0 3rem; text-align: center; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.4rem 1rem; border-radius: 999px;
+    border: 1px solid rgba(124,58,237,0.3);
+    background: rgba(124,58,237,0.08);
+    font-size: 0.85rem; color: var(--violet-light);
+    margin-bottom: 1.5rem;
+  }
+  .hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .hero h1 {
+    font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 800; line-height: 1.1;
+    background: linear-gradient(135deg, #fff 0%, var(--violet-light) 50%, var(--indigo) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+  }
+  .hero p {
+    font-size: 1.1rem; color: var(--slate); max-width: 600px; margin:0 auto 2rem;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.85rem 2rem; border-radius: 999px; font-weight: 600; font-size: 0.95rem;
+    text-decoration: none; transition: all 0.2s; cursor: pointer; border: none;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--violet), var(--indigo));
+    color: #fff; box-shadow: 0 4px 24px rgba(124,58,237,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(124,58,237,0.4); }
+  .btn-ghost {
+    background: transparent; color: var(--slate); border: 1px solid rgba(255,255,255,0.1);
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.05); color: #fff; }
+
+  /* Stats */
+  .stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem; margin: 3rem 0;
+  }
+  .stat-card {
+    padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02); backdrop-filter: blur(8px);
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 2rem; font-weight: 800; 
+    background: linear-gradient(135deg, var(--violet-light), var(--indigo));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .stat-label { font-size: 0.8rem; color: var(--slate); margin-top: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* Services */
+  .section-title { text-align: center; margin: 4rem 0 2rem; }
+  .section-title h2 { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .section-title p { color: var(--slate); }
+
+  .services-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem; margin-bottom: 3rem;
+  }
+  .service-card {
+    padding: 1.75rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02); backdrop-filter: blur(8px);
+    transition: all 0.3s; position: relative; overflow: hidden;
+  }
+  .service-card:hover {
+    border-color: rgba(124,58,237,0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(124,58,237,0.1);
+  }
+  .service-card:hover::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--violet), var(--indigo));
+  }
+  .service-icon { font-size: 2rem; margin-bottom: 1rem; }
+  .service-card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .service-card p { color: var(--slate); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1rem; }
+  .service-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .tag {
+    padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.7rem;
+    font-weight: 600;
+  }
+  .tag-live { background: rgba(16,185,129,0.12); color: var(--green); }
+  .tag-soon { background: rgba(245,158,11,0.12); color: var(--amber); }
+  .tag-bounty { background: rgba(124,58,237,0.12); color: var(--violet-light); }
+
+  /* How it works */
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin: 2rem 0 4rem; }
+  .step {
+    text-align: center; padding: 1.5rem;
+    border-radius: 16px; border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02);
+  }
+  .step-num {
+    width: 40px; height: 40px; border-radius: 50%; margin: 0 auto 1rem;
+    background: linear-gradient(135deg, var(--violet), var(--indigo));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 1.1rem;
+  }
+  .step h4 { font-weight: 700; margin-bottom: 0.25rem; }
+  .step p { color: var(--slate); font-size: 0.85rem; }
+
+  /* Footer */
+  footer {
+    text-align: center; padding: 3rem 0; color: var(--slate); font-size: 0.8rem;
+    border-top: 1px solid rgba(255,255,255,0.04); margin-top: 3rem;
+  }
+  footer a { color: var(--violet-light); text-decoration: none; }
+
+  @media (max-width: 640px) {
+    .hero { padding: 3rem 0 2rem; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .services-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-glow bg-glow-1"></div>
+<div class="bg-glow bg-glow-2"></div>
+
+<div class="container">
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero-badge"><span class="dot"></span> Live on x402 Protocol</div>
+    <h1>Proxies.sx</h1>
+    <p>Payment-gated API suite — Amazon, food delivery, social trends, and marketplace intelligence. Pay per call in USDC.</p>
+    <div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
+      <a href="https://github.com/AtlasNexusOps/proxiesx-services" class="btn btn-primary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        View on GitHub
+      </a>
+      <a href="https://github.com/AtlasNexusOps/proxiesx-services/blob/main/DEPLOY.md" class="btn btn-ghost">Deploy Guide →</a>
+    </div>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-value">5</div>
+      <div class="stat-label">Live Services</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">USDC</div>
+      <div class="stat-label">Payment Token</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">x402</div>
+      <div class="stat-label">Protocol</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">24/7</div>
+      <div class="stat-label">Uptime</div>
+    </div>
+  </div>
+
+  <!-- Services -->
+  <div class="section-title">
+    <h2>Service Suite</h2>
+    <p>Five specialized trackers behind one unified API gateway</p>
+  </div>
+
+  <div class="services-grid">
+    <div class="service-card">
+      <div class="service-icon">📦</div>
+      <h3>Amazon Product & BSR Tracker</h3>
+      <p>Real-time product price tracking, Best Sellers Rank monitoring, and competitive analysis.</p>
+      <div class="service-meta">
+        <span class="tag tag-live">● Live</span>
+        <span class="tag tag-bounty">#72 · $75</span>
+      </div>
+    </div>
+
+    <div class="service-card">
+      <div class="service-icon">🍔</div>
+      <h3>Food Delivery Intelligence</h3>
+      <p>Price comparison across DoorDash, Uber Eats, and Grubhub. Restaurant-level analytics.</p>
+      <div class="service-meta">
+        <span class="tag tag-live">● Live</span>
+        <span class="tag tag-bounty">#76 · $50</span>
+      </div>
+    </div>
+
+    <div class="service-card">
+      <div class="service-icon">🏪</div>
+      <h3>Facebook Marketplace Monitor</h3>
+      <p>Track listings, price trends, and seller activity across Facebook Marketplace.</p>
+      <div class="service-meta">
+        <span class="tag tag-soon">◉ In Progress</span>
+        <span class="tag tag-bounty">#75</span>
+      </div>
+    </div>
+
+    <div class="service-card">
+      <div class="service-icon">📈</div>
+      <h3>Trend Intelligence</h3>
+      <p>Cross-platform trend detection, sentiment analysis, and viral content prediction.</p>
+      <div class="service-meta">
+        <span class="tag tag-soon">◉ In Progress</span>
+        <span class="tag tag-bounty">#70</span>
+      </div>
+    </div>
+
+    <div class="service-card">
+      <div class="service-icon">🎵</div>
+      <h3>TikTok Trend Tracker</h3>
+      <p>Hashtag analytics, creator discovery, and viral sound tracking on TikTok.</p>
+      <div class="service-meta">
+        <span class="tag tag-soon">◉ In Progress</span>
+        <span class="tag tag-bounty">#51</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div class="section-title">
+    <h2>How It Works</h2>
+    <p>x402 payment-gated API — pay per call, get data instantly</p>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h4>Send Request</h4>
+      <p>Call any service endpoint with your query parameters</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h4>402 Payment Required</h4>
+      <p>Gateway returns x402 invoice with USDC amount</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h4>Pay USDC</h4>
+      <p>Send exact USDC on Solana to unlock the endpoint</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <h4>Get Data</h4>
+      <p>Receive structured JSON/CSV with scraped intelligence</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>Proxies.sx · Built by <a href="https://github.com/AtlasNexusOps">Atlas Nexus</a> · <a href="https://github.com/AtlasNexusOps/proxiesx-services">Source</a></p>
+</footer>
+</body>
+</html>
